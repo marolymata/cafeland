@@ -3,7 +3,7 @@ version: '3.8'
 services:
   mysql:
     image: mysql:8.0
-    container_name: mysql-quarkus-volumes
+    container_name: cafeland-db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root_password
@@ -13,16 +13,36 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      # Named volume completamente administrado por Docker
       - mysql-data:/var/lib/mysql
       - ./init-scripts:/docker-entrypoint-initdb.d:ro
     networks:
-      - quarkus-network
+      - cafeland-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "quarkus_user", "-pquarkus_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+    cafeland-api:
+    image: marolymata/cafeland-api:1.0  
+    container_name: cafeland-app
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: cafeland_db
+      MYSQL_USER: quarkus_user
+      MYSQL_PASSWORD: quarkus_password
+    ports:
+      - "8080:8080"
+    depends_on:
+      cafeland-db:
+        condition: service_healthy
+    networks:
+      - cafeland-net
 
 volumes:
   # Docker decide dónde almacenar los datos
   mysql-data:
 
 networks:
-  quarkus-network:
+  cafeland-net:
     driver: bridge
