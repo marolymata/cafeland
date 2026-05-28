@@ -21,7 +21,7 @@ services:
       start_period: 30s  
       
   cafeland-api:
-    image: marolymata/cafeland-api:1.0
+    image: marolymata/cafeland-api:1.1.0
     container_name: cafeland-app
     depends_on:
       cafeland-db:
